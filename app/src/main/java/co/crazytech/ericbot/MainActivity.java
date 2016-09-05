@@ -11,6 +11,7 @@ import android.os.AsyncTask;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.util.Log;
+import android.view.MotionEvent;
 import android.view.View;
 import android.widget.Button;
 import android.widget.SeekBar;
@@ -62,27 +63,49 @@ public class MainActivity extends AppCompatActivity {
         });
 
         btnGo = (Button)findViewById(R.id.buttonAccelerate);
-        btnGo.setOnClickListener(new View.OnClickListener() {
+        btnGo.setOnTouchListener(new View.OnTouchListener() {
             @Override
-            public void onClick(View v) {
-                if(btSocket!=null&&btSocket.isConnected()) try {
-                    btSocket.getOutputStream().write(String.valueOf("1:"+1).getBytes());
-                    btSocket.getOutputStream().write(String.valueOf("1:"+4).getBytes());
-                } catch (IOException e) {
-                    e.printStackTrace();
+            public boolean onTouch(View v, MotionEvent event) {
+                switch(event.getAction()) {
+                    case MotionEvent.ACTION_DOWN:
+                        if(btSocket!=null&&btSocket.isConnected()) try {
+                            btSocket.getOutputStream().write(String.valueOf("1:"+1).getBytes());
+                        } catch (IOException e) {
+                            e.printStackTrace();
+                        }
+                        return true; // if you want to handle the touch event
+                    case MotionEvent.ACTION_UP:
+                        if(btSocket!=null&&btSocket.isConnected()) try {
+                            btSocket.getOutputStream().write(String.valueOf("1:"+3).getBytes());
+                        } catch (IOException e) {
+                            e.printStackTrace();
+                        }
+                        return true; // if you want to handle the touch event
                 }
+                return false;
             }
         });
         btnStop = (Button)findViewById(R.id.buttonBrake);
-        btnStop.setOnClickListener(new View.OnClickListener() {
+        btnStop.setOnTouchListener(new View.OnTouchListener() {
             @Override
-            public void onClick(View v) {
-                if(btSocket!=null&&btSocket.isConnected()) try {
-                    btSocket.getOutputStream().write(String.valueOf("1:"+2).getBytes());
-                    btSocket.getOutputStream().write(String.valueOf("1:"+5).getBytes());
-                } catch (IOException e) {
-                    e.printStackTrace();
+            public boolean onTouch(View v, MotionEvent event) {
+                switch(event.getAction()) {
+                    case MotionEvent.ACTION_DOWN:
+                        if(btSocket!=null&&btSocket.isConnected()) try {
+                            btSocket.getOutputStream().write(String.valueOf("1:"+2).getBytes());
+                        } catch (IOException e) {
+                            e.printStackTrace();
+                        }
+                        return true; // if you want to handle the touch event
+                    case MotionEvent.ACTION_UP:
+                        if(btSocket!=null&&btSocket.isConnected()) try {
+                            btSocket.getOutputStream().write(String.valueOf("1:"+3).getBytes());
+                        } catch (IOException e) {
+                            e.printStackTrace();
+                        }
+                        return true; // if you want to handle the touch event
                 }
+                return false;
             }
         });
 
