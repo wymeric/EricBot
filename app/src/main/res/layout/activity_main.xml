@@ -43,4 +43,22 @@
         android:layout_alignParentTop="true"
         android:layout_alignLeft="@+id/buttonAccelerate"
         android:layout_alignStart="@+id/buttonAccelerate" />
+
+    <Button
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="DETACH"
+        android:id="@+id/buttonDetach"
+        android:layout_below="@+id/buttonDevices"
+        android:layout_alignLeft="@+id/buttonDevices"
+        android:layout_alignStart="@+id/buttonDevices" />
+
+    <Button
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Reset Servo"
+        android:id="@+id/buttonResetServo"
+        android:layout_above="@+id/buttonAccelerate"
+        android:layout_alignParentRight="true"
+        android:layout_alignParentEnd="true" />
 </RelativeLayout>

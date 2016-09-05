@@ -30,7 +30,7 @@ public class MainActivity extends AppCompatActivity {
     private BluetoothSocket btSocket;
 
     //widgets
-    Button btnGo,btnStop,btnDevices;
+    Button btnGo,btnStop,btnDevices,btnDetach,btnResetServo;
     SeekBar seekBar;
 
     @Override
@@ -38,8 +38,6 @@ public class MainActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
         setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE);
-
-        if (btSocket==null) new ConnectBT().execute("20:16:05:31:30:48");
 
         //call widgets
         btnDevices = (Button)findViewById(R.id.buttonDevices);
@@ -50,6 +48,51 @@ public class MainActivity extends AppCompatActivity {
                 startActivityForResult(intent,DEVICERES);
             }
         });
+        btnDetach = (Button)findViewById(R.id.buttonDetach);
+        btnDetach.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                if(btSocket!=null&&btSocket.isConnected()) try {
+                    btSocket.close();
+                    Toast.makeText(v.getContext(),"Connection Ended",Toast.LENGTH_LONG).show();
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+            }
+        });
+
+        btnGo = (Button)findViewById(R.id.buttonAccelerate);
+        btnGo.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                if(btSocket!=null&&btSocket.isConnected()) try {
+                    btSocket.getOutputStream().write(String.valueOf("1:"+1).getBytes());
+                    btSocket.getOutputStream().write(String.valueOf("1:"+4).getBytes());
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+            }
+        });
+        btnStop = (Button)findViewById(R.id.buttonBrake);
+        btnStop.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                if(btSocket!=null&&btSocket.isConnected()) try {
+                    btSocket.getOutputStream().write(String.valueOf("1:"+2).getBytes());
+                    btSocket.getOutputStream().write(String.valueOf("1:"+5).getBytes());
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+            }
+        });
+
+        btnResetServo = (Button)findViewById(R.id.buttonResetServo);
+        btnResetServo.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                seekBar.setProgress(90);
+            }
+        });
         seekBar = (SeekBar)findViewById(R.id.seekBar);
         seekBar.setMax(180);
         seekBar.setProgress(90);
@@ -57,9 +100,11 @@ public class MainActivity extends AppCompatActivity {
             @Override
             public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
                 try {
-                    if(btSocket!=null)btSocket.getOutputStream().write(String.valueOf(progress).getBytes());
+                    progress-=180;
+                    if(progress<0)progress*=-1;
+                    if(btSocket!=null)btSocket.getOutputStream().write(String.valueOf("0:"+progress).getBytes());
                     else Log.e("EricBot btSocket:","NULL");
-                    Log.d("EricBot servo angle:",String.valueOf(progress));
+                    Log.d("EricBot servo angle:",String.valueOf("0:"+progress));
                 } catch (IOException e){
                     Log.e("EricBot BT status:",e.getMessage());
                 }
@@ -76,6 +121,12 @@ public class MainActivity extends AppCompatActivity {
             }
         });
 
+    }
+
+    @Override
+    public void finish() {
+        if(btSocket!=null&&btSocket.isConnected())btnDetach.callOnClick();
+        super.finish();
     }
 
     @Override
