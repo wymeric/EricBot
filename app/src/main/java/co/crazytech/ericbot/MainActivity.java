@@ -203,12 +203,13 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
     public void onSensorChanged(SensorEvent event) {
         Float rollVal = event.values[1];
         tvGyros.setText("ROLL :"+ Float.toString(rollVal));
-        if(rollVal>15f||rollVal<-15f) {
-            if (rollVal > 15f && goPressed) {
-                motor.turnLeft();
-            } else if (rollVal < -15f && goPressed) {
-                motor.turnRight();
-            } else if (goPressed) motor.forward();
+        float threshold = 30f;
+        if(rollVal>threshold||rollVal<-threshold) {
+            if (rollVal > threshold && goPressed) motor.turnLeft();
+            else if (rollVal < -threshold && goPressed) motor.turnRight();
+            else if (goPressed) motor.forward();
+            else if (rollVal > threshold && reversePressed) motor.reverseLeft();
+            else if (rollVal < -threshold && reversePressed) motor.reverseRight();
             else if (reversePressed) motor.reverse();
         }
     }
@@ -255,7 +256,20 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
                 e.printStackTrace();
             }
         }
-
+        public void reverseLeft(){
+            if(btSocket!=null&&btSocket.isConnected()) try {
+                btSocket.getOutputStream().write(String.valueOf("1:"+6).getBytes());
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        }
+        public void reverseRight(){
+            if(btSocket!=null&&btSocket.isConnected()) try {
+                btSocket.getOutputStream().write(String.valueOf("1:"+7).getBytes());
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        }
     }
 
 
