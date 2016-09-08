@@ -46,9 +46,9 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
     private float timestamp;
 
     //widgets
-    Button btnGo,btnStop,btnDevices,btnDetach,btnResetServo;
-    SeekBar seekBar;
-    TextView tvGyros;
+    private Button btnGo,btnStop,btnDevices,btnDetach,btnResetServo,btnOledNo,btnOledJw,btnOledEricBot,btnOledHeart;
+    private SeekBar seekBar;
+    private TextView tvGyros;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -77,6 +77,51 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
                     Toast.makeText(v.getContext(),"Connection Ended",Toast.LENGTH_LONG).show();
                 } catch (IOException e) {
                     e.printStackTrace();
+                }
+            }
+        });
+
+        btnOledJw = (Button)findViewById(R.id.buttonOledJW);
+        btnOledJw.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                if(btSocket!=null) try {
+                    btSocket.getOutputStream().write(String.valueOf("2:"+1).getBytes());
+                } catch (IOException e) {
+                    Log.e("EricBot bt",e.getMessage());
+                }
+            }
+        });
+        btnOledNo = (Button)findViewById(R.id.buttonOledNo);
+        btnOledNo.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                if(btSocket!=null) try {
+                    btSocket.getOutputStream().write(String.valueOf("2:"+2).getBytes());
+                } catch (IOException e) {
+                    Log.e("EricBot bt",e.getMessage());
+                }
+            }
+        });
+        btnOledEricBot = (Button)findViewById(R.id.buttonOledEricBot);
+        btnOledEricBot.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                if(btSocket!=null) try {
+                    btSocket.getOutputStream().write(String.valueOf("2:"+3).getBytes());
+                } catch (IOException e) {
+                    Log.e("EricBot bt",e.getMessage());
+                }
+            }
+        });
+        btnOledHeart = (Button)findViewById(R.id.buttonOledHeart);
+        btnOledHeart.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                if(btSocket!=null) try {
+                    btSocket.getOutputStream().write(String.valueOf("2:"+4).getBytes());
+                } catch (IOException e) {
+                    Log.e("EricBot bt",e.getMessage());
                 }
             }
         });
