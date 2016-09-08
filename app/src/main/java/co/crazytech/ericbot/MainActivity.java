@@ -26,6 +26,9 @@ import java.io.IOException;
 import java.util.UUID;
 
 import co.crazytech.ericbot.bt.BtDeviceListActivity;
+import co.crazytech.ericbot.bt.ConnectBT;
+import co.crazytech.ericbot.motor.MotorAction;
+import co.crazytech.ericbot.oled.Oled;
 
 public class MainActivity extends AppCompatActivity implements SensorEventListener{
     //activity result identifier
@@ -35,7 +38,8 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
     private boolean goPressed,reversePressed;
 
     //bluetooth
-    private BluetoothSocket btSocket;
+    private ConnectBT connectBT;
+
 
     //Accelerometer
     private SensorManager sensorMan;
@@ -58,6 +62,8 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
 
         motor = new MotorAction();
 
+        connectBT = new ConnectBT(this);
+
         //call widgets
         tvGyros = (TextView)findViewById(R.id.textViewGyros);
         btnDevices = (Button)findViewById(R.id.buttonDevices);
@@ -72,57 +78,20 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
         btnDetach.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                if(btSocket!=null&&btSocket.isConnected()) try {
-                    btSocket.close();
-                    Toast.makeText(v.getContext(),"Connection Ended",Toast.LENGTH_LONG).show();
+                try {
+                    connectBT.closeBtConnection();
                 } catch (IOException e) {
                     e.printStackTrace();
                 }
             }
         });
 
-        btnOledJw = (Button)findViewById(R.id.buttonOledJW);
+        btnOledJw = (Button)findViewById(R.id.buttonOled);
         btnOledJw.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                if(btSocket!=null) try {
-                    btSocket.getOutputStream().write(String.valueOf("2:"+1).getBytes());
-                } catch (IOException e) {
-                    Log.e("EricBot bt",e.getMessage());
-                }
-            }
-        });
-        btnOledNo = (Button)findViewById(R.id.buttonOledNo);
-        btnOledNo.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                if(btSocket!=null) try {
-                    btSocket.getOutputStream().write(String.valueOf("2:"+2).getBytes());
-                } catch (IOException e) {
-                    Log.e("EricBot bt",e.getMessage());
-                }
-            }
-        });
-        btnOledEricBot = (Button)findViewById(R.id.buttonOledEricBot);
-        btnOledEricBot.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                if(btSocket!=null) try {
-                    btSocket.getOutputStream().write(String.valueOf("2:"+3).getBytes());
-                } catch (IOException e) {
-                    Log.e("EricBot bt",e.getMessage());
-                }
-            }
-        });
-        btnOledHeart = (Button)findViewById(R.id.buttonOledHeart);
-        btnOledHeart.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                if(btSocket!=null) try {
-                    btSocket.getOutputStream().write(String.valueOf("2:"+4).getBytes());
-                } catch (IOException e) {
-                    Log.e("EricBot bt",e.getMessage());
-                }
+                new Oled(v.getContext()).showPickerDialog();
+
             }
         });
 
@@ -132,11 +101,11 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
             public boolean onTouch(View v, MotionEvent event) {
                 switch(event.getAction()) {
                     case MotionEvent.ACTION_DOWN:
-                        motor.forward();
+                        motor.forward(connectBT);
                         goPressed = true;
                         return true; // if you want to handle the touch event
                     case MotionEvent.ACTION_UP:
-                        motor.stop();
+                        motor.stop(connectBT);
                         goPressed = false;
                         return true; // if you want to handle the touch event
                 }
@@ -149,11 +118,11 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
             public boolean onTouch(View v, MotionEvent event) {
                 switch(event.getAction()) {
                     case MotionEvent.ACTION_DOWN:
-                        motor.reverse();
+                        motor.reverse(connectBT);
                         reversePressed = true;
                         return true; // if you want to handle the touch event
                     case MotionEvent.ACTION_UP:
-                        motor.stop();
+                        motor.stop(connectBT);
                         reversePressed = false;
                         return true; // if you want to handle the touch event
                 }
@@ -174,15 +143,9 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
         seekBar.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
             @Override
             public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
-                try {
-                    progress-=180;
-                    if(progress<0)progress*=-1;
-                    if(btSocket!=null)btSocket.getOutputStream().write(String.valueOf("0:"+progress).getBytes());
-                    else Log.e("EricBot btSocket:","NULL");
-                    Log.d("EricBot servo angle:",String.valueOf("0:"+progress));
-                } catch (IOException e){
-                    Log.e("EricBot BT status:",e.getMessage());
-                }
+                progress-=180;
+                if(progress<0)progress*=-1;
+                writeBtOutputStream("0:"+progress);
             }
 
             @Override
@@ -205,9 +168,13 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
         sensorMan.remapCoordinateSystem(inR,sensorMan.AXIS_Y,sensorMan.AXIS_MINUS_X,outR);
     }
 
+    private void writeBtOutputStream(String str){
+        connectBT.writeBtOutputStream(str);
+    }
+
     @Override
     public void finish() {
-        if(btSocket!=null&&btSocket.isConnected())btnDetach.callOnClick();
+        if(connectBT.isBtConnected())btnDetach.callOnClick();
         sensorMan.unregisterListener(this);
         super.finish();
     }
@@ -215,8 +182,8 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
     @Override
     protected void onPause() {
         sensorMan.unregisterListener(this);
-        if(btSocket!=null)try {
-            btSocket.close();
+        try {
+            connectBT.closeBtConnection();
         } catch (IOException e) {
             e.printStackTrace();
         }
@@ -237,7 +204,7 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
             case DEVICERES :
                 if (resultCode== Activity.RESULT_OK) {
                     String btAddress = data.getStringExtra("btAddress");
-                    if(btSocket==null)new ConnectBT().execute(btAddress);
+                    if(connectBT.getBtSocket()==null)connectBT.execute(btAddress);
                 }
                 break;
         }
@@ -250,12 +217,12 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
         tvGyros.setText("ROLL :"+ Float.toString(rollVal));
         float threshold = 30f;
         if(rollVal>threshold||rollVal<-threshold) {
-            if (rollVal > threshold && goPressed) motor.turnLeft();
-            else if (rollVal < -threshold && goPressed) motor.turnRight();
-            else if (goPressed) motor.forward();
-            else if (rollVal > threshold && reversePressed) motor.reverseLeft();
-            else if (rollVal < -threshold && reversePressed) motor.reverseRight();
-            else if (reversePressed) motor.reverse();
+            if (rollVal > threshold && goPressed) motor.turnLeft(connectBT);
+            else if (rollVal < -threshold && goPressed) motor.turnRight(connectBT);
+            else if (goPressed) motor.forward(connectBT);
+            else if (rollVal > threshold && reversePressed) motor.reverseLeft(connectBT);
+            else if (rollVal < -threshold && reversePressed) motor.reverseRight(connectBT);
+            else if (reversePressed) motor.reverse(connectBT);
         }
     }
 
@@ -264,89 +231,4 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
     public void onAccuracyChanged(Sensor sensor, int accuracy) {
 
     }
-
-    private class MotorAction {
-        public void forward(){
-            if(btSocket!=null&&btSocket.isConnected()) try {
-                btSocket.getOutputStream().write(String.valueOf("1:"+1).getBytes());
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
-        }
-        public void reverse(){
-            if(btSocket!=null&&btSocket.isConnected()) try {
-                btSocket.getOutputStream().write(String.valueOf("1:"+2).getBytes());
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
-        }
-        public void stop(){
-            if(btSocket!=null&&btSocket.isConnected()) try {
-                btSocket.getOutputStream().write(String.valueOf("1:"+3).getBytes());
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
-        }
-        public void turnLeft(){
-            if(btSocket!=null&&btSocket.isConnected()) try {
-                btSocket.getOutputStream().write(String.valueOf("1:"+4).getBytes());
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
-        }
-        public void turnRight(){
-            if(btSocket!=null&&btSocket.isConnected()) try {
-                btSocket.getOutputStream().write(String.valueOf("1:"+5).getBytes());
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
-        }
-        public void reverseLeft(){
-            if(btSocket!=null&&btSocket.isConnected()) try {
-                btSocket.getOutputStream().write(String.valueOf("1:"+6).getBytes());
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
-        }
-        public void reverseRight(){
-            if(btSocket!=null&&btSocket.isConnected()) try {
-                btSocket.getOutputStream().write(String.valueOf("1:"+7).getBytes());
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
-        }
-    }
-
-
-
-    private class ConnectBT extends AsyncTask<String,Void,Void> {
-        private boolean connectSuccess = true;
-        private BluetoothAdapter btAdapter;
-        private boolean isBtConnected;
-        private UUID DEFAULT_UUID = UUID.fromString("00001101-0000-1000-8000-00805F9B34FB");
-
-        @Override
-        protected Void doInBackground(String... addresses) {
-            try {
-                if (btSocket == null || !isBtConnected) {
-                    btAdapter = BluetoothAdapter.getDefaultAdapter();
-                    BluetoothDevice device = btAdapter.getRemoteDevice(addresses[0]);
-                    btSocket = device.createInsecureRfcommSocketToServiceRecord(DEFAULT_UUID);
-                    BluetoothAdapter.getDefaultAdapter().cancelDiscovery();
-                    btSocket.connect();
-                }
-            } catch (IOException e) {
-                connectSuccess = false;
-            }
-            return null;
-        }
-
-        @Override
-        protected void onPostExecute(Void voidParam) {
-            super.onPostExecute(voidParam);
-            if (connectSuccess) Toast.makeText(MainActivity.this,"Connected",Toast.LENGTH_LONG).show();
-            else Toast.makeText(MainActivity.this,"Failed to Connect",Toast.LENGTH_LONG).show();
-        }
-    }
-
 }

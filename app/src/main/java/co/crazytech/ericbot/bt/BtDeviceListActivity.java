@@ -67,7 +67,8 @@ public class BtDeviceListActivity extends AppCompatActivity {
         ArrayList list = new ArrayList();
         if(pairedDevices.size()>0){
             for (BluetoothDevice device : pairedDevices) {
-                list.add(device.getName()+"\n"+device.getAddress());
+                String address[] = device.getAddress().split(":");
+                list.add(device.getName()+" ("+address[4]+address[5]+")");
             }
         } else {
             Toast.makeText(this,"No Paired Bluetooth Device found",Toast.LENGTH_LONG).show();
