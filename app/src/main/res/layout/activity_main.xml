@@ -71,4 +71,52 @@
         android:layout_alignParentTop="true"
         android:layout_alignParentLeft="true"
         android:layout_alignParentStart="true" />
+
+    <Button
+        style="?android:attr/buttonStyleSmall"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="OLED JW"
+        android:id="@+id/buttonOledJW"
+        android:layout_below="@+id/textViewGyros"
+        android:layout_alignParentLeft="true"
+        android:layout_alignParentStart="true"
+        android:layout_alignRight="@+id/buttonOledEricBot"
+        android:layout_alignEnd="@+id/buttonOledEricBot" />
+
+    <Button
+        style="?android:attr/buttonStyleSmall"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="OLED EricBot"
+        android:id="@+id/buttonOledEricBot"
+        android:layout_below="@+id/buttonOledJW"
+        android:layout_alignParentLeft="true"
+        android:layout_alignParentStart="true"
+        android:layout_toLeftOf="@+id/seekBar"
+        android:layout_toStartOf="@+id/seekBar" />
+
+    <Button
+        style="?android:attr/buttonStyleSmall"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="OLED No"
+        android:id="@+id/buttonOledNo"
+        android:layout_below="@+id/buttonOledEricBot"
+        android:layout_alignParentLeft="true"
+        android:layout_alignParentStart="true"
+        android:layout_alignRight="@+id/buttonOledEricBot"
+        android:layout_alignEnd="@+id/buttonOledEricBot" />
+
+    <Button
+        style="?android:attr/buttonStyleSmall"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="OLED Heart"
+        android:id="@+id/buttonOledHeart"
+        android:layout_below="@+id/buttonOledNo"
+        android:layout_alignParentLeft="true"
+        android:layout_alignParentStart="true"
+        android:layout_alignRight="@+id/buttonOledNo"
+        android:layout_alignEnd="@+id/buttonOledNo" />
 </RelativeLayout>
