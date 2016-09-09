@@ -15,6 +15,7 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import java.util.ArrayList;
+import java.util.List;
 import java.util.Set;
 
 import co.crazytech.ericbot.R;
@@ -27,6 +28,7 @@ import static android.bluetooth.BluetoothAdapter.*;
 public class BtDeviceListActivity extends AppCompatActivity {
     private BluetoothAdapter btAdapter;
     private Set<BluetoothDevice> pairedDevices;
+    private List<BluetoothDevice> btDevices;
 
     //widgets
     private Button btnPaired;
@@ -64,9 +66,11 @@ public class BtDeviceListActivity extends AppCompatActivity {
 
     private void pairedDeviceList() {
         pairedDevices = btAdapter.getBondedDevices();
+        btDevices = new ArrayList<BluetoothDevice>();
         ArrayList list = new ArrayList();
         if(pairedDevices.size()>0){
             for (BluetoothDevice device : pairedDevices) {
+                btDevices.add(device);
                 String address[] = device.getAddress().split(":");
                 list.add(device.getName()+" ("+address[4]+address[5]+")");
             }
@@ -82,8 +86,7 @@ public class BtDeviceListActivity extends AppCompatActivity {
     private AdapterView.OnItemClickListener listClickListener = new AdapterView.OnItemClickListener() {
         @Override
         public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-            String info = ((TextView)view).getText().toString();
-            String address = info.substring(info.length()-17);
+            String address = btDevices.get(position).getAddress();
             Intent i = new Intent();
             i.putExtra("btAddress",address);
             setResult(Activity.RESULT_OK,i);

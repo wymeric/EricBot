@@ -20,7 +20,6 @@ public class ConnectBT extends AsyncTask<String,Void,Void> {
     private boolean connectSuccess = true;
     private BluetoothAdapter btAdapter;
     private BluetoothSocket btSocket;
-    private boolean isBtConnected;
     private UUID DEFAULT_UUID = UUID.fromString("00001101-0000-1000-8000-00805F9B34FB");
     private Context context;
 
@@ -47,13 +46,16 @@ public class ConnectBT extends AsyncTask<String,Void,Void> {
     }
 
     public void closeBtConnection() throws IOException {
-        if(isBtConnected())btSocket.close();
+        if(isBtConnected()){
+            btSocket.close();
+            Toast.makeText(context,"Bluetooth Connection Ended",Toast.LENGTH_LONG).show();
+        }
     }
 
     @Override
     protected Void doInBackground(String... addresses) {
         try {
-            if (btSocket == null || !isBtConnected) {
+            if (!isBtConnected()) {
                 btAdapter = BluetoothAdapter.getDefaultAdapter();
                 BluetoothDevice device = btAdapter.getRemoteDevice(addresses[0]);
                 btSocket = device.createInsecureRfcommSocketToServiceRecord(DEFAULT_UUID);

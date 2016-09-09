@@ -19,9 +19,9 @@ public class Oled {
     }
 
     public void  showPickerDialog(final ConnectBT connectBT){
-        AlertDialog.Builder builderSingle = new AlertDialog.Builder(context);
-        builderSingle.setIcon(android.R.drawable.ic_dialog_alert);
-        builderSingle.setTitle("Select One Name:-");
+        AlertDialog.Builder dialog = new AlertDialog.Builder(context);
+        dialog.setIcon(android.R.drawable.ic_dialog_alert);
+        dialog.setTitle("Select One Name:-");
 
         final ArrayAdapter<String> arrayAdapter = new ArrayAdapter<String>(
                 context,
@@ -31,7 +31,7 @@ public class Oled {
         arrayAdapter.add("no!");
         arrayAdapter.add("heart");
 
-        builderSingle.setNegativeButton(
+        dialog.setNegativeButton(
                 "cancel",
                 new DialogInterface.OnClickListener() {
                     @Override
@@ -40,7 +40,7 @@ public class Oled {
                     }
                 });
 
-        builderSingle.setAdapter(arrayAdapter, new DialogInterface.OnClickListener() {
+        dialog.setAdapter(arrayAdapter, new DialogInterface.OnClickListener() {
             @Override
             public void onClick(DialogInterface dialog, int which) {
                 switch (which){
@@ -48,7 +48,7 @@ public class Oled {
                 }
             }
         });
-        builderSingle.show();
+        dialog.show();
     }
 
 }

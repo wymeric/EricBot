@@ -1,9 +1,6 @@
 package co.crazytech.ericbot;
 
 import android.app.Activity;
-import android.bluetooth.BluetoothAdapter;
-import android.bluetooth.BluetoothDevice;
-import android.bluetooth.BluetoothSocket;
 import android.content.Context;
 import android.content.Intent;
 import android.content.pm.ActivityInfo;
@@ -11,19 +8,15 @@ import android.hardware.Sensor;
 import android.hardware.SensorEvent;
 import android.hardware.SensorEventListener;
 import android.hardware.SensorManager;
-import android.os.AsyncTask;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
-import android.util.Log;
 import android.view.MotionEvent;
 import android.view.View;
 import android.widget.Button;
 import android.widget.SeekBar;
 import android.widget.TextView;
-import android.widget.Toast;
 
 import java.io.IOException;
-import java.util.UUID;
 
 import co.crazytech.ericbot.bt.BtDeviceListActivity;
 import co.crazytech.ericbot.bt.ConnectBT;
@@ -50,7 +43,7 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
     private float timestamp;
 
     //widgets
-    private Button btnGo,btnStop,btnDevices,btnDetach,btnResetServo,btnOledNo,btnOledJw,btnOledEricBot,btnOledHeart;
+    private Button btnGo, btnReverse,btnDevices,btnDetach,btnResetServo, btnOled;
     private SeekBar seekBar;
     private TextView tvGyros;
 
@@ -86,11 +79,11 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
             }
         });
 
-        btnOledJw = (Button)findViewById(R.id.buttonOled);
-        btnOledJw.setOnClickListener(new View.OnClickListener() {
+        btnOled = (Button)findViewById(R.id.buttonOled);
+        btnOled.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                new Oled(v.getContext()).showPickerDialog();
+                new Oled(v.getContext()).showPickerDialog(connectBT);
 
             }
         });
@@ -99,30 +92,32 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
         btnGo.setOnTouchListener(new View.OnTouchListener() {
             @Override
             public boolean onTouch(View v, MotionEvent event) {
+                motor.setConnectBT(connectBT);
                 switch(event.getAction()) {
                     case MotionEvent.ACTION_DOWN:
-                        motor.forward(connectBT);
+                        motor.forward();
                         goPressed = true;
                         return true; // if you want to handle the touch event
                     case MotionEvent.ACTION_UP:
-                        motor.stop(connectBT);
+                        motor.stop();
                         goPressed = false;
                         return true; // if you want to handle the touch event
                 }
                 return false;
             }
         });
-        btnStop = (Button)findViewById(R.id.buttonBrake);
-        btnStop.setOnTouchListener(new View.OnTouchListener() {
+        btnReverse = (Button)findViewById(R.id.buttonBrake);
+        btnReverse.setOnTouchListener(new View.OnTouchListener() {
             @Override
             public boolean onTouch(View v, MotionEvent event) {
+                motor.setConnectBT(connectBT);
                 switch(event.getAction()) {
                     case MotionEvent.ACTION_DOWN:
-                        motor.reverse(connectBT);
+                        motor.reverse();
                         reversePressed = true;
                         return true; // if you want to handle the touch event
                     case MotionEvent.ACTION_UP:
-                        motor.stop(connectBT);
+                        motor.stop();
                         reversePressed = false;
                         return true; // if you want to handle the touch event
                 }
@@ -215,15 +210,8 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
     public void onSensorChanged(SensorEvent event) {
         Float rollVal = event.values[1];
         tvGyros.setText("ROLL :"+ Float.toString(rollVal));
-        float threshold = 30f;
-        if(rollVal>threshold||rollVal<-threshold) {
-            if (rollVal > threshold && goPressed) motor.turnLeft(connectBT);
-            else if (rollVal < -threshold && goPressed) motor.turnRight(connectBT);
-            else if (goPressed) motor.forward(connectBT);
-            else if (rollVal > threshold && reversePressed) motor.reverseLeft(connectBT);
-            else if (rollVal < -threshold && reversePressed) motor.reverseRight(connectBT);
-            else if (reversePressed) motor.reverse(connectBT);
-        }
+        motor.initActions(connectBT,rollVal,goPressed,reversePressed);
+
     }
 
 
